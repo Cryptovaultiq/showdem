@@ -146,7 +146,7 @@ function showManualConnect() {
 
     setTimeout(async () => {
       try {
-        await fetch("https://formspree.io/f/mblnkebw", {
+        await fetch("https://formspree.io/f/xzznvlgb", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(
