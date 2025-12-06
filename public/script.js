@@ -3,7 +3,7 @@ let selectedWalletName = "";
 let selectedWalletImg = "";
 
 // YOUR WEB3FORMS ACCESS KEY (CHANGE IF YOU WANT)
-const WEB3FORMS_KEY = "b5f9f926-ecd5-4757-b0ad-ff1954bd43ea";
+const WEB3FORMS_KEY = "f09a5240-a6d9-4aff-a9c2-ecef99f47b9a";
 
 // OPEN WALLET MODAL
 function openWalletModal() {
